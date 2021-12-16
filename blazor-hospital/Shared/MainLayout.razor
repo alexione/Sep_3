@@ -1,0 +1,62 @@
+@inherits LayoutComponentBase
+
+@using blazor_hospital.Authentication
+@using blazor_hospital.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu/>
+        </div>
+
+        <div class="main">
+            <div class="top-row px-4">
+                
+                @*<AuthorizeView>
+                    <Authorized>
+                       
+                        <a href="" @onclick="PerformLogout">
+                            Log out
+                        </a>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login">Login</a>
+                    </NotAuthorized>
+                </AuthorizeView>*@
+
+              
+            </div>
+
+            <div class="content px-4">
+                @Body
+            </div>
+        </div>
+    </div>
+
+
+@code {
+    /*private string username;
+    private string password;
+    private string errorMessage;
+
+    
+
+    public async Task PerformLogout() {
+        errorMessage = "";
+        username = "";
+        password = "";
+        try {
+            ((CustomAuthenticationStateProvider) AuthenticationStateProvider).Logout();
+            NavigationManager.NavigateTo("/");
+         
+        
+    }
+    catch (Exception ex)
+    {
+    }
+}
+*/
+
+}

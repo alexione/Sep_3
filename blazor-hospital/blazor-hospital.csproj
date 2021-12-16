@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>blazor_hospital</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DiagramBuilder" Version="1.0.3" />
+      <PackageReference Include="Jxnflzc.XMLClassDiagram" Version="1.2.1" />
+      <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+      <PackageReference Include="System.Net.Http.Json" Version="6.0.0-rc.2.21480.5" />
+    </ItemGroup>
+
+</Project>

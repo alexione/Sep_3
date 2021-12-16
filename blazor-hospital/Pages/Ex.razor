@@ -1,0 +1,78 @@
+﻿@*@page "/"
+
+@using System.Collections.Generic
+@using System.IO
+@using System.Text.Json
+@using System.Text.Json.Serialization
+
+@inject IHttpClientFactory _clientFactory
+
+<h3>Weather Data</h3>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if (forecast is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var w in forecast)
+        {
+            <tr>
+                <td>@w.id</td>
+                <td>@w.fullname</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {      
+    IList<DoctorModel> forecast;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "http://localhost:8080/doctors");
+
+        var client = _clientFactory.CreateClient();
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+    //Console.WriteLine(response.Content.ReadAsStringAsync());
+            string responseString = await response.Content.ReadAsStringAsync();
+            forecast = JsonSerializer.Deserialize<List<DoctorModel>>(responseString);
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our forecast: { response.ReasonPhrase }";
+        }
+
+    // var client = _clientFactory.CreateClient("meta");
+    //
+    // try
+    // {
+    //     forecast = await client.GetFromJsonAsync<DoctorModel>("http://localhost:8080/doctors");
+    //     errorString = null;
+    // }
+    // catch (Exception ex)
+    // {
+    //     errorString = $"There was an error getting our forecast: { ex.Message }";
+    // }
+    }
+}*@

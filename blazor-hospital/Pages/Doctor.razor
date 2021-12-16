@@ -1,0 +1,95 @@
+@page "/doctor"
+
+@using System.Collections.Generic
+@using System.IO
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory _clientFactory
+
+<h3>Doctor</h3>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if (forecast is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>CPR</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Speciality</th>
+            <th>City</th>
+            <th>Gender</th>
+            <th>House Number</th>
+            <th>Street</th>
+            <th>Postal Code</th>
+            <th>Phone</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var w in forecast)
+        {
+            <tr>
+                <td>@w.cpr_doctor</td>
+                <td>@w.doctor_name</td>
+                <td>@w.doctor_age</td>
+                <td>@w.speciality</td>
+                <td>@w.city</td>
+                <td>@w.gender</td>
+                <td>@w.house_number</td>
+                <td>@w.street</td>
+                <td>@w.postal_code</td>
+                <td>@w.phone</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    IList<DoctorModel> forecast;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://localhost:8080/doctors");
+
+        var client = _clientFactory.CreateClient("ServerName");
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+    //Console.WriteLine(response.Content.ReadAsStringAsync());
+            string responseString = await response.Content.ReadAsStringAsync();
+            forecast = JsonSerializer.Deserialize<List<DoctorModel>>(responseString);
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our forecast: {response.ReasonPhrase}";
+        }
+
+    // var client = _clientFactory.CreateClient("meta");
+    //
+    // try
+    // {
+    //     forecast = await client.GetFromJsonAsync<DoctorModel>("http://localhost:8080/doctors");
+    //     errorString = null;
+    // }
+    // catch (Exception ex)
+    // {
+    //     errorString = $"There was an error getting our forecast: { ex.Message }";
+    // }
+    }
+
+}
