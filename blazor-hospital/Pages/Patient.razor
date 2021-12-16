@@ -1,0 +1,151 @@
+﻿@page "/patient"
+
+@using System.Collections.Generic
+@using System.IO
+@using System.Net.Http.Headers
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory _clientFactory
+@inject NavigationManager NavigationManager
+
+
+<h3>Patient</h3>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if (forecast is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <EditForm Model="@patients" OnValidSubmit="SearchClick">
+
+
+        <div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="inputCpr" placeholder="Search by CPR" @bind-value="patients.cpr_patient"/>
+
+            </div>
+        </div>
+
+
+        <div class="pull-left">
+            <button disabled="@loading" class="btn btn-primary">
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Search
+            </button>
+            @*<a href="/editpatient" class="btn btn-warning" type="button">
+                        Edit
+                    </a>*@
+            
+                <a href="/addpatient" class="btn btn-primary" type="button">
+                    ADD
+                </a>
+           
+        </div>
+    </EditForm>
+
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+
+        <tr>
+            <th>CPR</th>
+            <th>Name</th>
+            <th>Blood Type</th>
+            <th>House Number</th>
+            <th>Street</th>
+            <th>Postal Code</th>
+            <th>City</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Last Update</th>
+            <th>Patient Status</th>
+
+
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var w in forecast)
+        {
+            <tr>
+
+                <td>@w.cpr_patient</td>
+                <td>@w.patient_name</td>
+                <td>@w.blood_type</td>
+                <td>@w.house_number</td>
+                <td>@w.street</td>
+                <td>@w.postal_code</td>
+                <td>@w.city</td>
+                <td>@w.phone</td>
+                <td>@w.gender</td>
+                <td>@w.last_update</td>
+                <td>@w.patient_status</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    IList<PatientModel> forecast;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://localhost:8080/patients");
+
+        var client = _clientFactory.CreateClient("ServerName");
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+    //Console.WriteLine(response.Content.ReadAsStringAsync());
+            string responseString = await response.Content.ReadAsStringAsync();
+            forecast = JsonSerializer.Deserialize<List<PatientModel>>(responseString);
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our forecast: {response.ReasonPhrase}";
+        }
+    }
+
+    PatientMod patients = new PatientMod();
+    private bool loading;
+    //string companyname = requForm["companyname"];
+
+    protected async Task SearchClick()
+    {
+        loading = true;
+        try
+        {
+            var client = _clientFactory.CreateClient("ServerName");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://localhost:8080/patients/" + patients.cpr_patient),
+            };
+            using (var response = await client.SendAsync(request))
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(body);
+                forecast = JsonSerializer.Deserialize<List<PatientModel>>(body);
+                loading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+
+}

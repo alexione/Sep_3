@@ -1,0 +1,243 @@
+﻿@*@page "/editpatient"
+<h3>EditPatient</h3>
+
+@using Microsoft.Extensions.Logging
+@using System.Collections.Generic
+@using System.IO
+@using System.Net.Http.Headers
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory _clientFactory
+@inject NavigationManager NavigationManager
+
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if (rooms is null || doctors is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+<div class="card">
+    <h4 class="card-header">Add Patient</h4>
+
+    <div class="card-body">
+        <EditForm Model="@patient" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator/>
+
+            <div class="form-group col-md-6">
+                <label for="inputCpr">Cpr number</label>
+                <input value='@patient.cpr_patient' type="text" class="form-control" id="inputCpr" />
+
+            </div>
+            <div class="form-group col-md-6">
+                <label for="inputName">Name</label>
+                <input type="text" class="form-control" value='@patient.patient_name' id="inputName" />
+
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputblood_type">Blood Type</label>
+                <input type="text" class="form-control" id="inputblood_type" @bind-value="patient.blood_type"/>
+            
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputhouse_number">House Number</label>
+                <input type="text" class="form-control" id="inputhouse_number" @bind-value="patient.house_number"/>
+            
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputstreet">Street</label>
+                <input type="text" class="form-control" id="inputstreet" @bind-value="patient.street"/>
+            
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputpostal_code">Postal Code</label>
+                <input type="text" class="form-control" id="inputpostal_code" @bind-value="patient.postal_code"/>
+            
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputcity">City</label>
+                <input type="text" class="form-control" id="inputcity" @bind-value="patient.city"/>
+            
+            </div>
+            
+            <div class="form-group col-md-6">
+                <label for="inputphone">Phone</label>
+                <input type="text" class="form-control" id="inputphone" @bind-value="patient.phone"/>
+            
+            </div>
+            
+              <div class="form-group col-md-6">
+                            <label for="inputgender">Gender</label>
+                            <input type="text" class="form-control" id="inputgender" @bind-value="patient.gender"/>
+                        
+                        </div>
+                        
+            
+              <div class="form-group col-md-6">
+                            <label for="inputlast_update">Last Update</label>
+                            <input type="text" class="form-control" id="inputlast_update" @bind-value="patient.last_update"/>
+                        
+                        </div>
+                        
+            
+            <div class="form-group col-md-6">
+                <label for="inputpatient_status">Patient Status</label>
+                <input type="text" class="form-control" id="inputpatient_status" @bind-value="patient.patient_status"/>
+                        
+            </div>
+            
+            $1$
+            <div class="form-group col-md-6">
+                <label for="inputdoctorId">Doctor</label>
+                <input type="text" class="form-control" id="inputdoctorId" @bind-value="patient.doctorId"/>
+                                    
+            </div>
+            #1#
+       
+            
+              
+            <div class="form-group col-md-6">
+                   <label for="roomID">Room</label>
+                <select name="roomID" id="roomID" class="form-control"@bind="patient.roomID">
+                    <option value="">-- Select Department --</option>
+                    @foreach (var w in rooms)
+                    {
+                        <option value="@w.room_number">
+                            @w.room_number
+                        </option>
+                    }
+                </select>
+            </div>
+            
+            $1$ <div class="form-group col-md-6"> #1#
+            $1$     <label for="inputroomID">Room</label> #1#
+            $1$     <input type="text" class="form-control" id="inputroomID" @bind-value="patient.roomID"/> #1#
+            $1$                          #1#
+            $1$ </div> #1#
+            
+            
+            <div class="form-group col-md-6">
+                   <label for="doctorId">Doctor</label>
+                <select name="doctorId" id="doctorId" class="form-control"@bind="patient.doctorId">
+                    <option value="">-- Select Department --</option>
+                    @foreach (var w in doctors)
+                    {
+                        <option value="@w.cpr_doctor">
+                            @w.doctor_name
+                        </option>
+                    }
+                </select>
+            </div>
+                        
+            
+                        
+            
+
+
+            <button disabled="@loading" class="btn btn-primary">
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Add
+            </button>
+
+        </EditForm>
+    </div>
+
+
+</div>
+
+
+@code {
+
+    PatientMod patient = new PatientMod();
+    private bool loading;
+    //string companyname = requForm["companyname"];
+
+    protected async Task OnValidSubmit()
+    {
+        loading = true;
+        try
+        {
+            var client = _clientFactory.CreateClient("ServerName");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("https://localhost:8080/patients"),
+                Content = new StringContent("{\n\t\"cpr_patient\":" + patient.cpr_patient + ",\n\t\"patient_name\":\"" + patient.patient_name + "\",\n\t\"blood_type\":\"" + patient.blood_type + "\",\n\t\"house_number\":" + patient.house_number + ",\n\t\"street\":\"" + patient.street + "\",\n\t\"postal_code\":" + patient.postal_code + ",\n\t\"city\":\"" + patient.city + "\",\n\t\"phone\":" + patient.phone + ",\n\t\"gender\":\"" + patient.gender + "\",\n\t\"last_update\":\"" + patient.last_update + "\",\n\t\"patient_status\":\"" + patient.patient_status + "\",\n\t\"doctorId\":" + patient.doctorId + ",\n\t\"roomID\": " + patient.roomID + "\n}\n")
+                {
+                    Headers =
+                    {
+                        ContentType = new MediaTypeHeaderValue("application/json")
+                    }
+                }
+            };
+            using (var response = await client.SendAsync(request))
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(body);
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+
+
+    IList<RoomModel> rooms;
+    IList<DoctorModel> doctors;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://localhost:8080/rooms");
+        var request2 = new HttpRequestMessage(HttpMethod.Get,
+            "https://localhost:8080/doctors");
+
+        var client = _clientFactory.CreateClient("ServerName");
+
+        HttpResponseMessage response = await client.SendAsync(request);
+        HttpResponseMessage response2 = await client.SendAsync(request2);
+        if (response.IsSuccessStatusCode && response2.IsSuccessStatusCode)
+        {
+    //Console.WriteLine(response.Content.ReadAsStringAsync());
+            string responseString = await response.Content.ReadAsStringAsync();
+            rooms = JsonSerializer.Deserialize<List<RoomModel>>(responseString);
+            string responseString2 = await response2.Content.ReadAsStringAsync();
+            doctors = JsonSerializer.Deserialize<List<DoctorModel>>(responseString2);
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our forecast: {response.ReasonPhrase}";
+        }
+
+    // var client = _clientFactory.CreateClient("meta");
+    //
+    // try
+    // {
+    //     forecast = await client.GetFromJsonAsync<DoctorModel>("http://localhost:8080/doctors");
+    //     errorString = null;
+    // }
+    // catch (Exception ex)
+    // {
+    //     errorString = $"There was an error getting our forecast: { ex.Message }";
+    // }
+    }
+    
+
+}
+}*@
